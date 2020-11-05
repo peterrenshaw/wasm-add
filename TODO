@@ -1,0 +1,23 @@
+  __________  ____  ____ 
+ /_  __/ __ \/ __ \/ __ \
+  / / / / / / / / / / / /
+ / / / /_/ / /_/ / /_/ / 
+/_/  \____/_____/\____/  
+             
+
+2020NOV04
+* simplify compile process
+
+* write some JS code that loads wasm and works in Safari
+- there are core JS WASM api browser compatibility reference that do not work in Safari
+- see what can be used, demo it.
+- follow this thread to see what happens when compatibility is an issue and what happens 
+  when new software is released that use the WASM api
+
+  <https://twitter.com/peterrenshaw/status/1323836589693235201>
+  <https://twitter.com/peterrenshaw/status/1324188936386719744>
+
+
+* sorc
+ 
+  <https://developer.mozilla.org/en-US/docs/WebAssembly#API_reference>

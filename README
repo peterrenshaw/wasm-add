@@ -1,0 +1,101 @@
+    ____  _________    ____  __  _________
+   / __ \/ ____/   |  / __ \/  |/  / ____/
+  / /_/ / __/ / /| | / / / / /|_/ / __/   
+ / _, _/ /___/ ___ |/ /_/ / /  / / /___   
+/_/ |_/_____/_/  |_/_____/_/  /_/_____/   
+             
+
+I want to use WASM with Rust but I do not want to go near the 
+NodeJS code base. So how can you do this when every reference
+seems to want to default to NodeJS?
+
+
+I found a nice recipe by Alain Viguier: "WASM in Rust without NodeJS"
+<https://dev.to/dandyvica/wasm-in-rust-without-nodejs-2e0c>
+                             
+
+that solves this very problem. The idea is to reproduce the recipe, 
+find out how the toolchain works and see what happens.
+
+
+2020NOV05
+* document why, add base files. 
+
+2020NOV04
+* works but slow
+- more to do
+
+* the mozilla docs explaining the calls
+
+  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/compile
+
+  https://rustwasm.github.io/docs/wasm-pack/tutorials/npm-browser-packages/getting-started.html
+
+* compiling steps
+
+  # compile to WASM
+  $ wasm-gc target/wasm32-unknown-unknown/debug/wasm_add.wasm
+
+  # strip 
+  $ wasm-gc target/wasm32-unknown-unknown/debug/wasm_add.wasm
+
+  # check add exported 
+  $ wasm2wat target/wasm32-unknown-unknown/debug/wasm_sample.wasm -o target/wasm32-unknown-unknown/debug/wasm_sample.wat
+
+  # html 
+
+ <!DOCTYPE html>
+ <html>
+  <head>
+    <script src="wasm_sample.js"></script>
+  <head>
+  <body>
+    <form onSubmit="return false">
+      Enter X: <input type="number" name="X" required><br>
+      Enter Y: <input type="number" name="Y" required><br><br>
+      <input 
+        type="submit" 
+        value="X+Y=" 
+        onClick="result.innerText = wasm_add(X.value,Y.value)">
+      <label id="result"></label>   
+    </form>       
+  </body>
+  <html>
+
+  # wasm_add.js 
+  // use this JS API to load the WASM module and start using it in a streaming mode
+  // i.e. without having to wait
+  WebAssembly.instantiateStreaming(fetch("wasm_add.wasm"))
+    .then(wasmModule => {
+        // this saves the exported function from WASM module for use in JS
+        wasm_add = wasmModule.instance.exports.add;
+    });
+
+  # python server giving wasm header
+  import http.server
+  import socketserver
+
+  PORT = 8000
+
+  Handler = http.server.SimpleHTTPRequestHandler
+  Handler.extensions_map.update({
+    '.wasm': 'application/wasm',
+  })
+
+  socketserver.TCPServer.allow_reuse_address = True
+  with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    httpd.allow_reuse_address = True
+    print("serving at port", PORT)
+    httpd.serve_forever()
+
+  
+
+* sorc 
+
+  https://dev.to/dandyvica/wasm-in-rust-without-nodejs-2e0c
+
+  https://github.com/rustwasm/wasm-pack-template
+
+  https://github.com/WebAssembly/wabt
+
+* intitial checkin
